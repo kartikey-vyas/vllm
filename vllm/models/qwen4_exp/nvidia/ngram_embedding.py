@@ -467,6 +467,11 @@ class Qwen4ExpNGramEmbedding(nn.Module):
         engram_config = get_current_vllm_config().engram_config
         embedding_cls: type[Qwen4ExpPLEEmbedding]
         if engram_config is not None and engram_config.checkpoint_mapped:
+            if isinstance(embedding_quant_method, Qwen4ExpPLENvFp4EmbeddingMethod):
+                raise NotImplementedError(
+                    "checkpoint_mapped PLE storage reads FP8 and BF16 tables only; "
+                    "keep an NVFP4 table resident or in pinned host memory"
+                )
             embedding_cls = Qwen4ExpPLEPageableHostEmbedding
         elif engram_config is not None and engram_config.cpu_offload:
             embedding_cls = Qwen4ExpPLEPinnedHostEmbedding
